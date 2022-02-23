@@ -1,9 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe 'Subscription API' do
-  let(:tea) { Tea.create(name: 'Oolong', description: 'It tastes good', temperature: '50C', brew_time: '5 minutes') }
+  let!(:tea) { Tea.create(name: 'Oolong', description: 'It tastes good', temperature: '50C', brew_time: '5 minutes') }
   
-  let(:customer) { Customer.create(name: 'Kevin', email: 'kevin@example.com', address: '1234 My Street') }
+  let!(:customer) { Customer.create(name: 'Kevin', email: 'kevin@example.com', address: '1234 My Street') }
 
   describe 'POST api/v1/subscription' do
     it 'creates a new subscription for a customer' do
@@ -15,7 +15,7 @@ RSpec.describe 'Subscription API' do
         frequency: 'monthly'
       }
 
-      post '/api/v1/subscription', params: subscription_params.to_json, headers: headers
+      post '/api/v1/subscriptions', params: subscription_params.to_json, headers: headers
 
       expect(response).to be_successful
 
@@ -33,7 +33,7 @@ RSpec.describe 'Subscription API' do
     it 'changes a subscription status from active to canceled' do
       subscription = Subscription.create(tea_id: tea.id, customer_id: customer.id, price: '$3.00', status: 'Active', frequency: 'monthly')
 
-      patch "/api/v1/subscription/#{subscription.id}", headers: headers
+      patch "/api/v1/subscriptions/#{subscription.id}", headers: headers
 
       expect(response).to be_successful
 
@@ -44,14 +44,14 @@ RSpec.describe 'Subscription API' do
   end
 
   describe 'GET api/v1/subscription/:customer_id' do
-    let(:subscription1) { Subscription.create(customer_id: customer.id, tea_id: tea.id, price: '$3.00', status: 'Active', frequency: 'monthly')}
-    let(:subscription2) { Subscription.create(customer_id: customer.id, tea_id: tea.id, price: '$3.00', status: 'Canceled', frequency: 'monthly')}
-    let(:subscription3) { Subscription.create(customer_id: customer.id, tea_id: tea.id, price: '$3.00', status: 'Active', frequency: 'monthly')}
+    let!(:subscription1) { Subscription.create(customer_id: customer.id, tea_id: tea.id, price: '$3.00', status: 'Active', frequency: 'monthly')}
+    let!(:subscription2) { Subscription.create(customer_id: customer.id, tea_id: tea.id, price: '$3.00', status: 'Canceled', frequency: 'monthly')}
+    let!(:subscription3) { Subscription.create(customer_id: customer.id, tea_id: tea.id, price: '$3.00', status: 'Active', frequency: 'monthly')}
 
     it 'returns a list of subscriptions for a customer' do
-      get "/api/v1/subscription/#{customer.id}"
+      get "/api/v1/subscriptions/#{customer.id}"
 
-      subscriptions = JSON.parse(response.body, symbolize_names: true)
+      subscriptions = JSON.parse(response.body, symbolize_names: true)[:data]
 
       expect(response).to be_successful
       expect(response).to have_http_status(200)
